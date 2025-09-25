@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Code Learning Platform | Career Focused</title>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f1624;
+      color: #d0d7de;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+    header {
+      background: #161b29;
+      padding: 18px 30px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #58a6ff;
+      letter-spacing: 4px;
+      box-shadow: 0 3px 12px #58a6ff44;
+      flex-shrink: 0;
+      /* Center Title */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      height: calc(100vh - 72px);
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #212a42;
+      border-right: 2px solid #58a6ff44;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #58a6ff55 transparent;
+    }
+    .sidebar::-webkit-scrollbar {
+      width: 7px;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background-color: #58a6ff55;
+      border-radius: 5px;
+    }
+    .sidebar h2 {
+      margin: 0 0 25px 0;
+      font-size: 24px;
+      color: #58a6ff;
+      text-align: center;
+      user-select: none;
+    }
+    .sidebar a {
+      padding: 12px 18px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #a3b8ff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      user-select: none;
+      box-shadow: inset 0 0 0 0 #58a6ff;
+      display: block;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #58a6ff;
+      color: #0f1624;
+      box-shadow: inset 0 0 15px 3px #58a6ffaa;
+    }
+    /* Search Bar Style (Local to Examples) */
+    #example-search {
+        width: 100%;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        border: 2px solid #58a6ff;
+        background: #0f1624;
+        color: #cdd6f4;
+        font-size: 17px;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+    #example-search:focus {
+        border-color: #a5d8ff;
+    }
+
+    /* Main area */
+    .main {
+      flex: 1;
+      padding: 30px 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: #161b29;
+      scrollbar-width: thin;
+      scrollbar-color: #58a6ff55 transparent;
+    }
+    .main::-webkit-scrollbar {
+      width: 9px;
+    }
+    .main::-webkit-scrollbar-thumb {
+      background-color: #58a6ff55;
+      border-radius: 5px;
+    }
+    .topic-title {
+      font-size: 40px;
+      font-weight: 700;
+      color: #58a6ff;
+      margin: 0 0 5px 0;
+      user-select: none;
+    }
+    .description {
+      font-size: 20px;
+      line-height: 1.5;
+      color: #aab9ffcc;
+      user-select: none;
+      margin-bottom: 15px;
+    }
+
+    /* Dropdown */
+    #example-selector {
+      width: 320px;
+      font-size: 17px;
+      border-radius: 8px;
+      border: 2px solid #58a6ff;
+      padding: 10px 15px;
+      background: #0f1624;
+      color: #cdd6f4;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+      outline-offset: 2px;
+      outline-color: #58a6ff88;
+    }
+    #example-selector:hover, #example-selector:focus {
+      border-color: #a5d8ff;
+      outline-color: #a5d8ffbb;
+    }
+
+    /* Code display */
+    #example-code {
+      background: #0f1624;
+      padding: 20px 25px;
+      border-radius: 12px;
+      font-family: 'Fira Code', monospace, monospace;
+      font-size: 16px;
+      color: #8ab4f8;
+      box-shadow: 0 0 15px #58a6ff33 inset;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      user-select: text;
+    }
+
+    /* Editable Code Area */
+    #code-editor {
+      font-family: 'Fira Code', monospace, monospace;
+      font-size: 18px;
+      background: #0f1624;
+      color: #cdd6f4;
+      border-radius: 14px;
+      border: 2px solid #58a6ff;
+      padding: 25px 25px 25px 30px;
+      min-height: 420px;
+      max-height: 520px;
+      resize: vertical;
+      outline-offset: 3px;
+      outline-color: #58a6ff88;
+      box-shadow: 0 0 25px #58a6ff66 inset;
+      line-height: 1.5;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      transition: border-color 0.4s ease;
+      user-select: text;
+    }
+    #code-editor:hover:not([readonly]),
+    #code-editor:focus:not([readonly]) {
+      border-color: #a5d8ff;
+      box-shadow: 0 0 40px #a5d8ffcc inset;
+      outline-color: #a5d8ffcc;
+    }
+    #code-editor[readonly] {
+        cursor: default;
+        border-color: #7fffd4; /* Different border for career info */
+        box-shadow: 0 0 25px #7fffd466 inset;
+    }
+
+
+    /* Run button */
+    #run-btn {
+      align-self: flex-start;
+      margin-top: 18px;
+      background: #58a6ff;
+      color: #0f1624;
+      font-weight: 700;
+      font-size: 20px;
+      padding: 14px 34px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 20px #58a6ffcc;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+    #run-btn:hover {
+      background: #a5d8ff;
+      box-shadow: 0 0 35px #a5d8ffdd;
+    }
+
+    /* Output */
+    #output {
+      background: #000a19;
+      font-family: 'Fira Code', monospace, monospace;
+      font-size: 18px;
+      padding: 25px 30px;
+      border-radius: 16px;
+      min-height: 170px;
+      max-height: 320px;
+      overflow-y: auto;
+      box-shadow: 0 0 25px #7fffd4aa inset;
+      white-space: pre-wrap;
+      user-select: text;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      color: #7fffd4; /* Default success color */
+    }
+    .error-output {
+        color: #ff5757; /* Error color */
+        box-shadow: 0 0 25px #ff5757aa inset !important;
+    }
+
+    /* Section headings and notes */
+    h3 {
+      margin: 0;
+      color: #58a6ffcc;
+      user-select: none;
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+    .teacher-notes-section {
+        padding: 15px;
+        background: #212a42;
+        border-left: 5px solid #7fffd4;
+        border-radius: 0 8px 8px 0;
+    }
+    .teacher-notes-section h3 {
+        color: #7fffd4;
+    }
+    .teacher-notes-section a {
+        color: #7fffd4;
+        text-decoration: none;
+        font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Interactive Code Learning Platform</header>
+
+  <div class="container">
+    <nav class="sidebar">
+      <h2>Topics</h2>
+      <a href="#" class="active" data-topic="javascript">JavaScript</a>
+      <a href="#" data-topic="python">Python</a>
+      <a href="#" data-topic="java">Java</a>
+      <a href="#" data-topic="c">C Programming</a>
+      <a href="#" data-topic="cpp">C++</a>
+      <a href="#" data-topic="ds">Data Structures</a>
+      <a href="#" data-topic="algo">Algorithms</a>
+      <a href="#" data-topic="htmlcss">HTML &amp; CSS</a>
+      <a href="#" data-topic="sql">SQL</a>
+      <hr style="border-color: #58a6ff44; margin: 15px 0;">
+      <a href="#" data-topic="career" style="background: #3c548c; color: #fff;">Career Paths 🗺️</a>
+    </nav>
+
+    <main class="main" role="main" aria-live="polite">
+      <h1 class="topic-title"></h1>
+      <p class="description"></p>
+
+      <div id="teacher-notes-placeholder">
+      </div>
+
+      <label for="example-search"><h3>Search Examples:</h3></label>
+      <input type="text" id="example-search" placeholder="Filter practice exercises..." aria-label="Filter practice exercises"/>
+
+      <label for="example-selector"><h3>Select Example:</h3></label>
+      <select id="example-selector" aria-label="Select example code"></select>
+
+      <h3>Example Code (Read-Only)</h3>
+      <pre id="example-code" aria-label="Example code display"></pre>
+
+      <h3>Try it Yourself (Editable)</h3>
+      <textarea id="code-editor" spellcheck="false" aria-label="Editable code editor"></textarea>
+      <button id="run-btn" aria-label="Run your code">Run Code</button>
+
+      <h3>Output</h3>
+      <div id="output" aria-live="polite" aria-atomic="true"></div>
+    </main>
+  </div>
+
+  <script>
+    const topics = {
+      javascript: {
+        title: "JavaScript Basics",
+        description: "The core language of the web! Learn variables, functions, and control flow. Use the editable area to run your code and see live errors.",
+        link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Introduction",
+        linkText: "MDN Web Docs: JavaScript Guide",
+        examples: [
+          { name: "1. Hello World (console.log)", code: `console.log("Hello, World!");`, output: null },
+          { name: "2. Variable Declaration (let)", code: `let x = 10;\nconsole.log(x);`, output: null },
+          { name: "3. Constant Declaration (const)", code: `const PI = 3.14159;\nconsole.log(PI);`, output: null },
+          { name: "4. Basic Addition", code: `let a = 5, b = 7;\nconsole.log(a + b);`, output: null },
+          { name: "5. Function Definition", code: `function greet(name) {\n  return "Hello, " + name;\n}\nconsole.log(greet("Dev"));`, output: null },
+          { name: "6. Anonymous Function", code: `const square = function(n) { return n * n; };\nconsole.log(square(4));`, output: null },
+          { name: "7. Arrow Function (ES6)", code: `const double = n => n * 2;\nconsole.log(double(6));`, output: null },
+          { name: "8. Simple If/Else", code: `let temp = 25;\nif (temp > 30) {\n  console.log("Hot!");\n} else {\n  console.log("Moderate.");\n}`, output: null },
+          { name: "9. For Loop (Count to 3)", code: `for (let i = 0; i < 3; i++) {\n  console.log("Count: " + i);\n}`, output: null },
+          { name: "10. While Loop", code: `let i = 0;\nwhile (i < 2) {\n  console.log("While: " + i);\n  i++;\n}`, output: null },
+          { name: "11. Array Initialization", code: `const arr = [10, 20, 30];\nconsole.log(arr[1]);`, output: null },
+          { name: "12. Array Push/Pop", code: `let stack = [1, 2];\nstack.push(3);\nconsole.log(stack.pop());`, output: null },
+          { name: "13. Array Map", code: `const nums = [1, 2];\nconst squared = nums.map(n => n * n);\nconsole.log(squared);`, output: null },
+          { name: "14. Array Filter", code: `const nums = [1, 2, 3, 4];\nconst even = nums.filter(n => n % 2 === 0);\nconsole.log(even);`, output: null },
+          { name: "15. Array Reduce (Sum)", code: `const nums = [1, 2, 3];\nconst sum = nums.reduce((acc, val) => acc + val, 0);\nconsole.log(sum);`, output: null },
+          { name: "16. Object Literal", code: `const user = { name: "Jen", age: 30 };\nconsole.log(user.name);`, output: null },
+          { name: "17. Switch Statement", code: `let day = 1;\nswitch(day) {\n  case 1: console.log("Mon"); break;\n  default: console.log("Other");\n}`, output: null },
+          { name: "18. Ternary Operator", code: `let age = 18;\nconst status = age >= 18 ? "Adult" : "Minor";\nconsole.log(status);`, output: null },
+          { name: "19. String Template Literal", code: `const user = "Alex";\nconsole.log(\`Welcome, \${user}!\`);`, output: null },
+          { name: "20. Date Object (Current Year)", code: `const year = new Date().getFullYear();\nconsole.log("Current Year: " + year);`, output: null },
+          { name: "21. Destructuring Array", code: `const [a, b] = [100, 200];\nconsole.log(b);`, output: null },
+          { name: "22. Spread Operator (Array)", code: `const arr1 = [1, 2];\nconst arr2 = [...arr1, 3];\nconsole.log(arr2);`, output: null }
+        ]
+      },
+      python: {
+        title: "Python Basics",
+        description: "The simple, powerful language for data science and automation. Remember: non-JS languages show simulated output.",
+        link: "https://docs.python.org/3/tutorial/",
+        linkText: "Official Python Tutorial",
+        examples: [
+          { name: "1. Hello World (print)", code: `print("Hello, World!")`, output: "Hello, World!" },
+          { name: "2. Variable Assignment", code: `message = "Python is cool"\nprint(message)`, output: "Python is cool" },
+          { name: "3. Simple Arithmetic", code: `result = 5 * 8 / 2\nprint(result)`, output: "20.0" },
+          { name: "4. Integer Division", code: `print(10 // 3)`, output: "3" },
+          { name: "5. Basic If/Elif/Else", code: `score = 85\nif score > 90:\n    print("A")\nelif score > 80:\n    print("B")\nelse:\n    print("C")`, output: "B" },
+          { name: "6. For Loop (range)", code: `for i in range(3):\n    print(i)`, output: "0\n1\n2" },
+          { name: "7. For Loop (list)", code: `fruits = ["apple", "banana"]\nfor fruit in fruits:\n    print(fruit)`, output: "apple\nbanana" },
+          { name: "8. While Loop", code: `count = 0\nwhile count < 2:\n    print(count)\n    count += 1`, output: "0\n1" },
+          { name: "9. Function Definition (def)", code: `def add(a, b):\n    return a + b\nprint(add(10, 5))`, output: "15" },
+          { name: "10. Return Multiple Values (Tuple)", code: `def get_coords():\n    return 10, 20\nx, y = get_coords()\nprint(y)`, output: "20" },
+          { name: "11. List Initialization", code: `my_list = [1, 2, 3]\nprint(my_list[0])`, output: "1" },
+          { name: "12. List Append/Pop (Stack)", code: `stack = [10]\nstack.append(20)\nprint(stack.pop())`, output: "20" },
+          { name: "13. Dictionary (Dict) Access", code: `person = {"name": "Zoe", "age": 25}\nprint(person["name"])`, output: "Zoe" },
+          { name: "14. List Comprehension", code: `nums = [1, 2, 3]\ndoubled = [x * 2 for x in nums]\nprint(doubled)`, output: "[2, 4, 6]" },
+          { name: "15. String Formatting (f-string)", code: `name = "Rex"\nprint(f"Hello, {name}!")`, output: "Hello, Rex!" },
+          { name: "16. Defining a Class", code: `class Dog:\n    def __init__(self, name):\n        self.name = name\ndog1 = Dog("Buddy")\nprint(dog1.name)`, output: "Buddy" },
+          { name: "17. Tuple Creation", code: `coords = (5, 8)\nprint(coords[1])`, output: "8" },
+          { name: "18. Finding List Length", code: `data = [1, 2, 3, 4, 5]\nprint(len(data))`, output: "5" },
+          { name: "19. Try/Except Block", code: `try:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print("Cannot divide by zero")`, output: "Cannot divide by zero" },
+          { name: "20. The 'in' Operator", code: `if "a" in "banana":\n    print("Found 'a'")`, output: "Found 'a'" },
+          { name: "21. Function with Default Arg", code: `def power(x, p=2):\n    print(x ** p)\npower(3)`, output: "9" },
+          { name: "22. Simulated Error Example", code: `def calc(a, b):\n    return a + b\nresult = calc(10)\nprint(result)`, output: "Error: TypeError: calc() missing 1 required positional argument: 'b'" }
+        ]
+      },
+      java: {
+        title: "Java Basics",
+        description: "Master the basics of this platform-independent, object-oriented powerhouse. Note: non-JS languages show simulated output.",
+        link: "https://docs.oracle.com/javase/tutorial/getstarted/index.html",
+        linkText: "Oracle Java Tutorials",
+        examples: [
+          { name: "1. Hello World (Main Class)", code: `public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello, World!");\n  }\n}`, output: "Hello, World!" },
+          { name: "2. Integer Variable", code: `public class Main {\n  public static void main(String[] args) {\n    int num = 42;\n    System.out.println(num);\n  }\n}`, output: "42" },
+          { name: "3. String Variable", code: `public class Main {\n  public static void main(String[] args) {\n    String name = "Java";\n    System.out.println(name);\n  }\n}`, output: "Java" },
+          { name: "4. Basic Arithmetic", code: `public class Main {\n  public static void main(String[] args) {\n    int sum = 5 + 3;\n    System.out.println(sum);\n  }\n}`, output: "8" },
+          { name: "5. Boolean Logic", code: `public class Main {\n  public static void main(String[] args) {\n    boolean isTrue = (10 > 5);\n    System.out.println(isTrue);\n  }\n}`, output: "true" },
+          { name: "6. Simple If/Else", code: `public class Main {\n  public static void main(String[] args) {\n    int val = 15;\n    if (val > 10) {\n      System.out.println("Big");\n    } else {\n      System.out.println("Small");\n    }\n  }\n}`, output: "Big" },
+          { name: "7. For Loop (Standard)", code: `public class Main {\n  public static void main(String[] args) {\n    for(int i=0; i<3; i++) {\n      System.out.println("I: " + i);\n    }\n  }\n}`, output: "I: 0\nI: 1\nI: 2" },
+          { name: "8. While Loop", code: `public class Main {\n  public static void main(String[] args) {\n    int j = 0;\n    while (j < 2) {\n      System.out.println("W: " + j);\n      j++;\n    }\n  }\n}`, output: "W: 0\nW: 1" },
+          { name: "9. Method Definition (Static)", code: `public class Main {\n  public static int add(int a, int b) {\n    return a + b;\n  }\n  public static void main(String[] args) {\n    System.out.println(add(2, 3));\n  }\n}`, output: "5" },
+          { name: "10. Array Declaration", code: `public class Main {\n  public static void main(String[] args) {\n    int[] arr = {10, 20};\n    System.out.println(arr[0]);\n  }\n}`, output: "10" },
+          { name: "11. Array Length", code: `public class Main {\n  public static void main(String[] args) {\n    int[] arr = {1, 2, 3, 4};\n    System.out.println(arr.length);\n  }\n}`, output: "4" },
+          { name: "12. Enhanced For Loop (For-Each)", code: `public class Main {\n  public static void main(String[] args) {\n    String[] names = {"A", "B"};\n    for (String name : names) {\n      System.out.println(name);\n    }\n  }\n}`, output: "A\nB" },
+          { name: "13. Defining a Class/Object", code: `class Car {\n  String model = "Sedan";\n}\npublic class Main {\n  public static void main(String[] args) {\n    Car myCar = new Car();\n    System.out.println(myCar.model);\n  }\n}`, output: "Sedan" },
+          { name: "14. Constructor Example", code: `class Item {\n  String name;\n  Item(String n) { name = n; }\n}\npublic class Main {\n  public static void main(String[] args) {\n    Item i = new Item("Pen");\n    System.out.println(i.name);\n  }\n}`, output: "Pen" },
+          { name: "15. Switch Statement (Basic)", code: `public class Main {\n  public static void main(String[] args) {\n    int code = 2;\n    switch(code) {\n      case 1: System.out.println("One"); break;\n      case 2: System.out.println("Two"); break;\n      default: System.out.println("Other");\n    }\n  }\n}`, output: "Two" },
+          { name: "16. Floating Point (Double)", code: `public class Main {\n  public static void main(String[] args) {\n    double pi = 3.14;\n    System.out.println(pi);\n  }\n}`, output: "3.14" },
+          { name: "17. Type Casting (Implicit)", code: `public class Main {\n  public static void main(String[] args) {\n    int i = 10;\n    long l = i;\n    System.out.println(l);\n  }\n}`, output: "10" },
+          { name: "18. Type Casting (Explicit)", code: `public class Main {\n  public static void main(String[] args) {\n    double d = 9.99;\n    int i = (int) d;\n    System.out.println(i);\n  }\n}`, output: "9" },
+          { name: "19. String Concatenation", code: `public class Main {\n  public static void main(String[] args) {\n    String s = "Hello" + " " + "Java";\n    System.out.println(s);\n  }\n}`, output: "Hello Java" },
+          { name: "20. Break Statement", code: `public class Main {\n  public static void main(String[] args) {\n    for (int i = 0; i < 5; i++) {\n      if (i == 3) break;\n      System.out.println(i);\n    }\n  }\n}`, output: "0\n1\n2" },
+          { name: "21. Finding Max with Math.max", code: `public class Main {\n  public static void main(String[] args) {\n    int max = Math.max(10, 20);\n    System.out.println(max);\n  }\n}`, output: "20" },
+          { name: "22. Boolean 'NOT' Operator", code: `public class Main {\n  public static void main(String[] args) {\n    boolean flag = false;\n    System.out.println(!flag);\n  }\n}`, output: "true" }
+        ]
+      },
+      c: {
+        title: "C Programming Basics",
+        description: "Learn the fundamentals of this low-level language. Focus on includes, `main`, and `printf`. Note: non-JS languages show simulated output.",
+        link: "https://www.tutorialspoint.com/cprogramming/index.htm",
+        linkText: "C Programming Tutorialspoint",
+        examples: [
+          { name: "1. Hello World (printf)", code: `#include <stdio.h>\n\nint main() {\n  printf("Hello, World!\\n");\n  return 0;\n}`, output: "Hello, World!" },
+          { name: "2. Integer Variable", code: `#include <stdio.h>\n\nint main() {\n  int age = 25;\n  printf("Age: %d\\n", age);\n  return 0;\n}`, output: "Age: 25" },
+          { name: "3. Floating Point (float)", code: `#include <stdio.h>\n\nint main() {\n  float pi = 3.14f;\n  printf("Pi: %.2f\\n", pi);\n  return 0;\n}`, output: "Pi: 3.14" },
+          { name: "4. Character Variable (char)", code: `#include <stdio.h>\n\nint main() {\n  char letter = 'A';\n  printf("Letter: %c\\n", letter);\n  return 0;\n}`, output: "Letter: A" },
+          { name: "5. Sum of Two Numbers", code: `#include <stdio.h>\n\nint main() {\n  int a = 5, b = 10;\n  printf("Sum: %d\\n", a + b);\n  return 0;\n}`, output: "Sum: 15" },
+          { name: "6. Simple If/Else", code: `#include <stdio.h>\n\nint main() {\n  int x = 7;\n  if (x > 5) {\n    printf("Greater\\n");\n  } else {\n    printf("Lesser\\n");\n  }\n  return 0;\n}`, output: "Greater" },
+          { name: "7. Standard For Loop", code: `#include <stdio.h>\n\nint main() {\n  for (int i = 0; i < 3; i++) {\n    printf("%d\\n", i);\n  }\n  return 0;\n}`, output: "0\n1\n2" },
+          { name: "8. While Loop", code: `#include <stdio.h>\n\nint main() {\n  int i = 0;\n  while (i < 2) {\n    printf("W%d\\n", i);\n    i++;\n  }\n  return 0;\n}`, output: "W0\nW1" },
+          { name: "9. Do-While Loop", code: `#include <stdio.h>\n\nint main() {\n  int i = 1;\n  do {\n    printf("D%d\\n", i);\n    i++;\n  } while (i < 3);\n  return 0;\n}`, output: "D1\nD2" },
+          { name: "10. Array Initialization", code: `#include <stdio.h>\n\nint main() {\n  int nums[3] = {10, 20, 30};\n  printf("%d\\n", nums[1]);\n  return 0;\n}`, output: "20" },
+          { name: "11. Array Iteration", code: `#include <stdio.h>\n\nint main() {\n  int arr[3] = {1, 2, 3};\n  for (int i = 0; i < 3; i++) {\n    printf("%d ", arr[i]);\n  }\n  return 0;\n}`, output: "1 2 3 " },
+          { name: "12. Defining a Simple Function", code: `#include <stdio.h>\n\nint multiply(int a, int b) {\n  return a * b;\n}\n\nint main() {\n  printf("Result: %d\\n", multiply(4, 5));\n  return 0;\n}`, output: "Result: 20" },
+          { name: "13. Function with Void Return", code: `#include <stdio.h>\n\nvoid display() {\n  printf("Function called\\n");\n}\n\nint main() {\n  display();\n  return 0;\n}`, output: "Function called" },
+          { name: "14. Pointer Declaration", code: `#include <stdio.h>\n\nint main() {\n  int var = 50;\n  int *ptr = &var;\n  printf("Value: %d\\n", *ptr);\n  return 0;\n}`, output: "Value: 50" },
+          { name: "15. Switch Statement", code: `#include <stdio.h>\n\nint main() {\n  char grade = 'B';\n  switch(grade) {\n    case 'A': printf("Excellent\\n"); break;\n    case 'B': printf("Good\\n"); break;\n    default: printf("Pass\\n");\n  }\n  return 0;\n}`, output: "Good" },
+          { name: "16. Simple String (char array)", code: `#include <stdio.h>\n\nint main() {\n  char str[] = "Code";\n  printf("String: %s\\n", str);\n  return 0;\n}`, output: "String: Code" },
+          { name: "17. Defining a Structure (struct)", code: `#include <stdio.h>\n\nstruct Point {\n  int x;\n  int y;\n};\n\nint main() {\n  struct Point p = {10, 20};\n  printf("X: %d\\n", p.x);\n  return 0;\n}`, output: "X: 10" },
+          { name: "18. Sizeof Operator", code: `#include <stdio.h>\n\nint main() {\n  printf("Size of int: %zu bytes\\n", sizeof(int));\n  return 0;\n}`, output: "Size of int: 4 bytes" },
+          { name: "19. Logical AND (&&)", code: `#include <stdio.h>\n\nint main() {\n  if (10 > 5 && 5 < 7) {\n    printf("Both true\\n");\n  }\n  return 0;\n}`, output: "Both true" },
+          { name: "20. Break Statement", code: `#include <stdio.h>\n\nint main() {\n  for (int i = 0; i < 5; i++) {\n    if (i == 3) break;\n    printf("%d ", i);\n  }\n  return 0;\n}`, output: "0 1 2 " },
+          { name: "21. Constant Variable (const)", code: `#include <stdio.h>\n\nint main() {\n  const float RATE = 0.5;\n  printf("Rate: %.1f\\n", RATE);\n  return 0;\n}`, output: "Rate: 0.5" },
+          { name: "22. Bitwise XOR Operator", code: `#include <stdio.h>\n\nint main() {\n  int a = 5; // 0101\n  int b = 3; // 0011\n  printf("XOR: %d\\n", a ^ b); // 0110 = 6\n  return 0;\n}`, output: "XOR: 6" }
+        ]
+      },
+      cpp: {
+        title: "C++ Basics",
+        description: "An extension of C with object-oriented programming (OOP) capabilities. Focus on `iostream` and classes. Note: non-JS languages show simulated output.",
+        link: "http://www.cplusplus.com/doc/tutorial/",
+        linkText: "C++ Tutorial from cplusplus.com",
+        examples: [
+          { name: "1. Hello World (iostream)", code: `#include <iostream>\n\nint main() {\n  std::cout << "Hello, World!" << std::endl;\n  return 0;\n}`, output: "Hello, World!" },
+          { name: "2. Using Namespace Std", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  cout << "Simplified output" << endl;\n  return 0;\n}`, output: "Simplified output" },
+          { name: "3. Integer Variable", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  int count = 100;\n  cout << count << endl;\n  return 0;\n}`, output: "100" },
+          { name: "4. Simple If/Else", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  int x = 12;\n  if (x > 10) {\n    cout << "Large" << endl;\n  } else {\n    cout << "Small" << endl;\n  }\n  return 0;\n}`, output: "Large" },
+          { name: "5. Standard For Loop", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  for (int i = 1; i <= 3; ++i) {\n    cout << i << " ";\n  }\n  cout << endl;\n  return 0;\n}`, output: "1 2 3 " },
+          { name: "6. While Loop", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  int i = 0;\n  while (i < 2) {\n    cout << i << endl;\n    i++;\n  }\n  return 0;\n}`, output: "0\n1" },
+          { name: "7. Array Initialization", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  int arr[] = {1, 2, 3};\n  cout << arr[2] << endl;\n  return 0;\n}`, output: "3" },
+          { name: "8. Function Definition", code: `#include <iostream>\nusing namespace std;\n\nint add(int a, int b) {\n  return a + b;\n}\n\nint main() {\n  cout << add(7, 8) << endl;\n  return 0;\n}`, output: "15" },
+          { name: "9. Class Definition (Simple)", code: `class Item {\npublic:\n  int id = 10;\n};\n\nint main() {\n  Item i;\n  cout << i.id << endl;\n  return 0;\n}`, output: "10" },
+          { name: "10. Class Constructor", code: `class Point {\npublic:\n  int x;\n  Point(int val) { x = val; }\n};\n\nint main() {\n  Point p(50);\n  cout << p.x << endl;\n  return 0;\n}`, output: "50" },
+          { name: "11. Public and Private", code: `class Data {\nprivate: int val = 5;\npublic: int get_val() { return val; }}\n\nint main() {\n  Data d;\n  cout << d.get_val() << endl;\n  return 0;\n}`, output: "5" },
+          { name: "12. Single Line Comment", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  // This is a comment\n  cout << "Comment ignored" << endl;\n  return 0;\n}`, output: "Comment ignored" },
+          { name: "13. Switch Statement", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  int opt = 3;\n  switch(opt) {\n    case 1: cout << "One"; break;\n    case 3: cout << "Three"; break;\n    default: cout << "Other";\n  }\n  return 0;\n}`, output: "Three" },
+          { name: "14. String Variable", code: `#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n  string s = "Hello";\n  cout << s << endl;\n  return 0;\n}`, output: "Hello" },
+          { name: "15. String Concatenation", code: `#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n  string s = "A" + string("B");\n  cout << s << endl;\n  return 0;\n}`, output: "AB" },
+          { name: "16. Reference Variables (&)", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  int x = 10;\n  int &ref = x;\n  ref = 20;\n  cout << x << endl;\n  return 0;\n}`, output: "20" },
+          { name: "17. Vector (Dynamic Array)", code: `#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n  vector<int> v = {10, 20};\n  v.push_back(30);\n  cout << v[2] << endl;\n  return 0;\n}`, output: "30" },
+          { name: "18. Pointer Basics", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  int var = 5;\n  int *p = &var;\n  cout << *p << endl;\n  return 0;\n}`, output: "5" },
+          { name: "19. Break Statement", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  for (int i = 0; i < 5; i++) {\n    if (i == 3) break;\n    cout << i << " ";\n  }\n  return 0;\n}`, output: "0 1 2 " },
+          { name: "20. The 'this' Pointer", code: `class Test {\npublic: int x;\nTest(int x) { this->x = x; }\n};\n\nint main() {\n  Test t(99);\n  cout << t.x << endl;\n  return 0;\n}`, output: "99" },
+          { name: "21. Simple Struct", code: `struct Vec2 {\n  int x;\n  int y;\n};\n\nint main() {\n  Vec2 v = {5, 10};\n  cout << v.y << endl;\n  return 0;\n}`, output: "10" },
+          { name: "22. Constant Variable (const)", code: `#include <iostream>\nusing namespace std;\n\nint main() {\n  const int MAX = 100;\n  cout << MAX << endl;\n  return 0;\n}`, output: "100" }
+        ]
+      },
+      ds: {
+        title: "Data Structures",
+        description: "Understand fundamental data organization methods like Arrays, Stacks, Queues, and Lists. Note: non-JS languages show simulated output.",
+        link: "https://www.geeksforgeeks.org/data-structures/",
+        linkText: "GeeksforGeeks Data Structures",
+        examples: [
+          { name: "1. Array (JS)", code: `const arr = [10, 20, 30];\nconsole.log("Size:", arr.length);`, output: "Size: 3" },
+          { name: "2. Array Access (JS)", code: `const arr = [5, 6, 7];\nconsole.log("Index 1:", arr[1]);`, output: "Index 1: 6" },
+          { name: "3. Stack Push (JS)", code: `let stack = [1];\nstack.push(2);\nconsole.log(stack);`, output: "1,2" },
+          { name: "4. Stack Pop (JS - LIFO)", code: `let stack = [1, 2];\nlet item = stack.pop();\nconsole.log(item);`, output: "2" },
+          { name: "5. Queue Enqueue (JS)", code: `let queue = [1];\nqueue.push(2);\nconsole.log(queue);`, output: "1,2" },
+          { name: "6. Queue Dequeue (JS - FIFO)", code: `let queue = [1, 2];\nlet item = queue.shift();\nconsole.log(item);`, output: "1" },
+          { name: "7. Linked List Node (Concept)", code: `class Node {\n  constructor(data, next = null) {\n    this.data = data;\n    this.next = next;\n  }\n}\nconsole.log("Node structure defined.");`, output: "Node structure defined." },
+          { name: "8. Linked List Head Insertion (Concept)", code: `// Inserting 'B' before 'A'\nconsole.log("List: B -> A -> null");`, output: "List: B -> A -> null" },
+          { name: "9. Dictionary/Map (JS Object)", code: `const map = { a: 1, b: 2 };\nconsole.log(map.a);`, output: "1" },
+          { name: "10. Dictionary/Map Iteration (JS)", code: `const map = { x: 1, y: 2 };\nfor (let key in map) {\n  console.log(key + ":" + map[key]);\n}`, output: "x:1\ny:2" },
+          { name: "11. Set Creation (JS - Unique)", code: `const s = new Set([1, 2, 2, 3]);\nconsole.log(Array.from(s));`, output: "1,2,3" },
+          { name: "12. Set Add/Delete (JS)", code: `const s = new Set([1]);\ns.add(5);\ns.delete(1);\nconsole.log(s.has(5));`, output: "true" },
+          { name: "13. Array 2D (Matrix) (JS)", code: `const matrix = [[1, 2], [3, 4]];\nconsole.log(matrix[1][0]);`, output: "3" },
+          { name: "14. Array 2D (Iteration) (JS)", code: `const m = [[1],[2]];\nfor(let row of m) console.log(row[0]);`, output: "1\n2" },
+          { name: "15. Python List as Queue (Deque Concept)", code: `from collections import deque\nqueue = deque(['A', 'B'])\nqueue.popleft()\nprint(queue)`, output: "deque(['B'])" },
+          { name: "16. Python Dictionary Keys", code: `person = {'name': 'Mia', 'age': 30}\nprint(person.keys())`, output: "dict_keys(['name', 'age'])" },
+          { name: "17. Array Shifting/Unshifting (JS)", code: `let arr = [2, 3];\narr.unshift(1);\nconsole.log(arr);`, output: "1,2,3" },
+          { name: "18. Hash Table Concept (Simulated)", code: `// Key 'Name' maps to value 'John'\nconsole.log("Hash: Name -> John");`, output: "Hash: Name -> John" },
+          { name: "19. Tree Node (Concept)", code: `// Node has data and references to left/right children\nconsole.log("Root (5) has Left(3) and Right(7)");`, output: "Root (5) has Left(3) and Right(7)" },
+          { name: "20. Simple Graph (Adjacency List)", code: `// G = {A: [B, C], B: [A]}\nconsole.log("A connected to B, C");`, output: "A connected to B, C" },
+          { name: "21. Array Splice (JS)", code: `let a = [1, 2, 3, 4];\na.splice(1, 2); // Remove 2 elements from index 1\nconsole.log(a);`, output: "1,4" },
+          { name: "22. Array Concat (JS)", code: `let a = [1, 2];\nlet b = [3, 4];\nconsole.log(a.concat(b));`, output: "1,2,3,4" }
+        ]
+      },
+      algo: {
+        title: "Algorithms",
+        description: "Explore problem-solving procedures for sorting, searching, and traversal. Focus on efficiency and logic. Note: non-JS languages show simulated output.",
+        link: "https://www.khanacademy.org/computing/computer-science/algorithms",
+        linkText: "Khan Academy Algorithms",
+        examples: [
+          { name: "1. Simple Summation (JS)", code: `let sum = 0;\nfor(let i = 1; i <= 3; i++) { sum += i; }\nconsole.log(sum);`, output: "6" },
+          { name: "2. Factorial (Recursive) (JS)", code: `function fact(n) {\n  if (n <= 1) return 1;\n  return n * fact(n - 1);\n}\nconsole.log(fact(4)); // 24`, output: "24" },
+          { name: "3. Linear Search (JS)", code: `function search(arr, val) {\n  for(let i of arr) if (i === val) return true;\n  return false;\n}\nconsole.log(search([1, 2, 3], 3));`, output: "true" },
+          { name: "4. Binary Search (Concept)", code: `// Efficient search on a sorted array.\nconsole.log("Search 15 in [5, 10, 15, 20]");`, output: "Found in 2 steps" },
+          { name: "5. Bubble Sort (Concept)", code: `// Simple sorting algorithm\nconsole.log("Input: [5, 1] -> Output: [1, 5]");`, output: "Output: [1, 5]" },
+          { name: "6. Selection Sort (Concept)", code: `// Finds min and swaps with current index\nconsole.log("Swapping minimum element");`, output: "Swapping minimum element" },
+          { name: "7. Insertion Sort (Concept)", code: `// Builds final sorted array one item at a time\nconsole.log("Inserting element into sorted part");`, output: "Inserting element into sorted part" },
+          { name: "8. Fibonacci Sequence (Iterative) (JS)", code: `let [a, b] = [0, 1];\nfor(let i = 0; i < 3; i++) {\n  let next = a + b; a = b; b = next;\n}\nconsole.log(a); // The 3rd value (2)`, output: "2" },
+          { name: "9. Palindrome Check (JS)", code: `function isPal(s) {\n  return s === s.split('').reverse().join('');\n}\nconsole.log(isPal("madam"));`, output: "true" },
+          { name: "10. String Reversal (JS)", code: `const s = "abc".split('').reverse().join('');\nconsole.log(s);`, output: "cba" },
+          { name: "11. Greatest Common Divisor (GCD) (JS)", code: `function gcd(a, b) {\n  return b === 0 ? a : gcd(b, a % b);\n}\nconsole.log(gcd(12, 18));`, output: "6" },
+          { name: "12. Depth First Search (DFS) (Concept)", code: `// Tree traversal: goes deep first\nconsole.log("Visit A -> B -> D");`, output: "Visit A -> B -> D" },
+          { name: "13. Breadth First Search (BFS) (Concept)", code: `// Tree traversal: goes level by level\nconsole.log("Visit Level 1, then Level 2");`, output: "Visit Level 1, then Level 2" },
+          { name: "14. Two Pointers (Concept)", code: `// Used for checking sorted arrays/strings\nconsole.log("Left pointer and Right pointer meet");`, output: "Left pointer and Right pointer meet" },
+          { name: "15. Sliding Window (Concept)", code: `// Used for array/string subsets of fixed size\nconsole.log("Window of size 3 slides right");`, output: "Window of size 3 slides right" },
+          { name: "16. Big O Notation (Concept)", code: `// Measures efficiency of an algorithm\nconsole.log("O(n) - Linear Time");`, output: "O(n) - Linear Time" },
+          { name: "17. Find Minimum in Array (JS)", code: `const arr = [5, 1, 9];\nlet min = Math.min(...arr);\nconsole.log(min);`, output: "1" },
+          { name: "18. Prime Number Check (Concept)", code: `// Checks divisibility up to sqrt(n)\nconsole.log("Is 13 Prime? Yes");`, output: "Is 13 Prime? Yes" },
+          { name: "19. Check for Anagrams (Concept)", code: `// Sorting two strings for comparison\nconsole.log("Words are anagrams");`, output: "Words are anagrams" },
+          { name: "20. Memoization (Concept)", code: `// Storing results of expensive function calls\nconsole.log("Result loaded from cache");`, output: "Result loaded from cache" },
+          { name: "21. Modulo Operation (JS)", code: `let result = 10 % 3;\nconsole.log(result); // Remainder is 1`, output: "1" },
+          { name: "22. Finding Average (JS)", code: `const arr = [10, 20, 30];\nconst avg = arr.reduce((a, b) => a + b) / arr.length;\nconsole.log(avg);`, output: "20" }
+        ]
+      },
+      htmlcss: {
+        title: "HTML & CSS",
+        description: "The foundations of web design: structure (HTML) and presentation (CSS). Output is simulated.",
+        link: "https://www.w3schools.com/html/default.asp",
+        linkText: "W3Schools HTML Tutorial",
+        examples: [
+          { name: "1. HTML Boilerplate", code: `<!DOCTYPE html>\n<html>\n<head><title>Page</title></head>\n<body>\n  <h1>Title</h1>\n</body>\n</html>`, output: "Rendered: A webpage with a level 1 heading" },
+          { name: "2. Heading Tags", code: `<h1>Main Title</h1>\n<h2>Subtitle</h2>`, output: "Rendered: Two levels of headings" },
+          { name: "3. Paragraph Tag", code: `<p>This is a paragraph of text.</p>`, output: "Rendered: A block of text" },
+          { name: "4. Simple Button", code: `<button>Click Me</button>`, output: "Rendered: A clickable button" },
+          { name: "5. Anchor Tag (Link)", code: `<a href="https://google.com">Google</a>`, output: "Rendered: A link to Google" },
+          { name: "6. Image Tag", code: `<img src="logo.png" alt="Company Logo">`, output: "Rendered: An image placeholder" },
+          { name: "7. Ordered List", code: `<ol>\n  <li>First</li>\n  <li>Second</li>\n</ol>`, output: "Rendered: Numbered list 1. 2." },
+          { name: "8. Unordered List", code: `<ul>\n  <li>A</li>\n  <li>B</li>\n</ul>`, output: "Rendered: Bulleted list" },
+          { name: "9. Div Container", code: `<div>\n  <p>Content inside a box</p>\n</div>`, output: "Rendered: Invisible structural container" },
+          { name: "10. Class Attribute", code: `<p class="highlight">Text</p>`, output: "Rendered: Text ready for CSS styling" },
+          { name: "11. ID Attribute", code: `<div id="main-content">...</div>`, output: "Rendered: Unique identifier for CSS/JS" },
+          { name: "12. Inline CSS Style", code: `<p style="color: blue;">Blue Text</p>`, output: "Rendered: Text colored blue" },
+          { name: "13. Basic CSS Rule", code: `/* CSS */\nh1 { color: red; }`, output: "Rendered: All H1 tags are red" },
+          { name: "14. CSS Class Selector", code: `/* CSS */\n.highlight { background: yellow; }`, output: "Rendered: Elements with class 'highlight' have yellow background" },
+          { name: "15. CSS ID Selector", code: `/* CSS */\n#main-content { border: 1px solid black; }`, output: "Rendered: Element with ID 'main-content' has a border" },
+          { name: "16. CSS Font Size", code: `/* CSS */\np { font-size: 18px; }`, output: "Rendered: Paragraph text size increased" },
+          { name: "17. CSS Box Model (Padding)", code: `/* CSS */\ndiv { padding: 10px; }`, output: "Rendered: Space added inside the div boundary" },
+          { name: "18. CSS Box Model (Margin)", code: `/* CSS */\np { margin-bottom: 20px; }`, output: "Rendered: Space added outside the paragraph boundary" },
+          { name: "19. Form Input (Text)", code: `<form><input type="text" placeholder="Your Name"></form>`, output: "Rendered: A text input field" },
+          { name: "20. Form Input (Checkbox)", code: `<form><input type="checkbox" checked></form>`, output: "Rendered: A checked checkbox" },
+          { name: "21. Semantic Header", code: `<header>Logo and Nav</header>`, output: "Rendered: Content designated as page header" },
+          { name: "22. Semantic Article", code: `<article>Blog Post Content</article>`, output: "Rendered: Self-contained piece of content" }
+        ]
+      },
+      sql: {
+        title: "SQL Basics",
+        description: "Learn to query, manage, and manipulate data in relational databases. Note: Output simulates query results.",
+        link: "https://sqlbolt.com/",
+        linkText: "SQLBolt Interactive Lessons",
+        examples: [
+          { name: "1. SELECT All Columns", code: `SELECT * FROM Customers;`, output: "Query: Retrieves all data from the Customers table" },
+          { name: "2. SELECT Specific Columns", code: `SELECT FirstName, LastName FROM Employees;`, output: "Query: Retrieves only first and last names" },
+          { name: "3. WHERE Clause (Filtering)", code: `SELECT * FROM Products WHERE Price > 50;`, output: "Query: Retrieves products costing more than 50" },
+          { name: "4. AND Operator", code: `SELECT * FROM Orders WHERE City = 'London' AND Status = 'Shipped';`, output: "Query: Orders shipped to London" },
+          { name: "5. OR Operator", code: `SELECT * FROM Users WHERE Role = 'Admin' OR Role = 'Manager';`, output: "Query: Users who are Admin or Manager" },
+          { name: "6. ORDER BY (Ascending)", code: `SELECT * FROM Books ORDER BY Title ASC;`, output: "Query: Books sorted A-Z by Title" },
+          { name: "7. ORDER BY (Descending)", code: `SELECT * FROM Sales ORDER BY Date DESC;`, output: "Query: Sales sorted newest to oldest by Date" },
+          { name: "8. INSERT INTO (New Record)", code: `INSERT INTO Customers (Name, City) VALUES ('Tom', 'Paris');`, output: "Query: New customer record inserted" },
+          { name: "9. UPDATE Record", code: `UPDATE Products SET Price = 100 WHERE ID = 5;`, output: "Query: Price of product with ID 5 updated to 100" },
+          { name: "10. DELETE Record", code: `DELETE FROM Logs WHERE Timestamp < '2023-01-01';`, output: "Query: Old log records deleted" },
+          { name: "11. LIKE Operator (Wildcard)", code: `SELECT * FROM Employees WHERE Name LIKE 'S%';`, output: "Query: Employees whose name starts with 'S'" },
+          { name: "12. COUNT Function (Aggregation)", code: `SELECT COUNT(*) FROM Customers;`, output: "Query: Returns the total number of customers" },
+          { name: "13. AVG Function (Aggregation)", code: `SELECT AVG(Salary) FROM Employees;`, output: "Query: Returns the average employee salary" },
+          { name: "14. SUM Function (Aggregation)", code: `SELECT SUM(Amount) FROM Transactions;`, output: "Query: Returns the total sum of all transactions" },
+          { name: "15. GROUP BY Clause", code: `SELECT Country, COUNT(*) FROM Customers GROUP BY Country;`, output: "Query: Counts customers per country" },
+          { name: "16. HAVING Clause", code: `SELECT Country, COUNT(*) FROM Customers GROUP BY Country HAVING COUNT(*) > 5;`, output: "Query: Countries with more than 5 customers" },
+          { name: "17. INNER JOIN (Basics)", code: `SELECT O.ID, C.Name FROM Orders O INNER JOIN Customers C ON O.CustomerID = C.ID;`, output: "Query: Joins Orders and Customers tables" },
+          { name: "18. LEFT JOIN", code: `SELECT * FROM Users LEFT JOIN Profiles ON Users.ID = Profiles.UserID;`, output: "Query: All users, plus matching profiles (if they exist)" },
+          { name: "19. IS NULL Operator", code: `SELECT * FROM Projects WHERE EndDate IS NULL;`, output: "Query: Projects that haven't been completed" },
+          { name: "20. BETWEEN Operator", code: `SELECT * FROM Products WHERE Price BETWEEN 10 AND 50;`, output: "Query: Products with price between 10 and 50" },
+          { name: "21. DISTINCT Keyword", code: `SELECT DISTINCT City FROM Customers;`, output: "Query: Returns unique city names only" },
+          { name: "22. CREATE TABLE", code: `CREATE TABLE Users (ID INT, Name VARCHAR(50), Email VARCHAR(100));`, output: "Query: New table named Users created" }
+        ]
+      },
+      ds: {
+        title: "Data Structures",
+        description: "Understand fundamental data organization methods like Arrays, Stacks, Queues, and Lists. Note: non-JS languages show simulated output.",
+        link: "https://www.geeksforgeeks.org/data-structures/",
+        linkText: "GeeksforGeeks Data Structures",
+        examples: [
+          { name: "1. Array (JS)", code: `const arr = [10, 20, 30];\nconsole.log("Size:", arr.length);`, output: "Size: 3" },
+          { name: "2. Array Access (JS)", code: `const arr = [5, 6, 7];\nconsole.log("Index 1:", arr[1]);`, output: "Index 1: 6" },
+          { name: "3. Stack Push (JS)", code: `let stack = [1];\nstack.push(2);\nconsole.log(stack);`, output: "1,2" },
+          { name: "4. Stack Pop (JS - LIFO)", code: `let stack = [1, 2];\nlet item = stack.pop();\nconsole.log(item);`, output: "2" },
+          { name: "5. Queue Enqueue (JS)", code: `let queue = [1];\nqueue.push(2);\nconsole.log(queue);`, output: "1,2" },
+          { name: "6. Queue Dequeue (JS - FIFO)", code: `let queue = [1, 2];\nlet item = queue.shift();\nconsole.log(item);`, output: "1" },
+          { name: "7. Linked List Node (Concept)", code: `class Node {\n  constructor(data, next = null) {\n    this.data = data;\n    this.next = next;\n  }\n}\nconsole.log("Node structure defined.");`, output: "Node structure defined." },
+          { name: "8. Linked List Head Insertion (Concept)", code: `// Inserting 'B' before 'A'\nconsole.log("List: B -> A -> null");`, output: "List: B -> A -> null" },
+          { name: "9. Dictionary/Map (JS Object)", code: `const map = { a: 1, b: 2 };\nconsole.log(map.a);`, output: "1" },
+          { name: "10. Dictionary/Map Iteration (JS)", code: `const map = { x: 1, y: 2 };\nfor (let key in map) {\n  console.log(key + ":" + map[key]);\n}`, output: "x:1\ny:2" },
+          { name: "11. Set Creation (JS - Unique)", code: `const s = new Set([1, 2, 2, 3]);\nconsole.log(Array.from(s));`, output: "1,2,3" },
+          { name: "12. Set Add/Delete (JS)", code: `const s = new Set([1]);\ns.add(5);\ns.delete(1);\nconsole.log(s.has(5));`, output: "true" },
+          { name: "13. Array 2D (Matrix) (JS)", code: `const matrix = [[1, 2], [3, 4]];\nconsole.log(matrix[1][0]);`, output: "3" },
+          { name: "14. Array 2D (Iteration) (JS)", code: `const m = [[1],[2]];\nfor(let row of m) console.log(row[0]);`, output: "1\n2" },
+          { name: "15. Python List as Queue (Deque Concept)", code: `from collections import deque\nqueue = deque(['A', 'B'])\nqueue.popleft()\nprint(queue)`, output: "deque(['B'])" },
+          { name: "16. Python Dictionary Keys", code: `person = {'name': 'Mia', 'age': 30}\nprint(person.keys())`, output: "dict_keys(['name', 'age'])" },
+          { name: "17. Array Shifting/Unshifting (JS)", code: `let arr = [2, 3];\narr.unshift(1);\nconsole.log(arr);`, output: "1,2,3" },
+          { name: "18. Hash Table Concept (Simulated)", code: `// Key 'Name' maps to value 'John'\nconsole.log("Hash: Name -> John");`, output: "Hash: Name -> John" },
+          { name: "19. Tree Node (Concept)", code: `// Node has data and references to left/right children\nconsole.log("Root (5) has Left(3) and Right(7)");`, output: "Root (5) has Left(3) and Right(7)" },
+          { name: "20. Simple Graph (Adjacency List)", code: `// G = {A: [B, C], B: [A]}\nconsole.log("A connected to B, C");`, output: "A connected to B, C" },
+          { name: "21. Array Splice (JS)", code: `let a = [1, 2, 3, 4];\na.splice(1, 2); // Remove 2 elements from index 1\nconsole.log(a);`, output: "1,4" },
+          { name: "22. Array Concat (JS)", code: `let a = [1, 2];\nlet b = [3, 4];\nconsole.log(a.concat(b));`, output: "1,2,3,4" }
+        ]
+      },
+      // --- Career Paths Topic (New) ---
+      career: {
+        title: "Career Paths in Tech 🗺️",
+        description: "Discover where your programming journey can take you! Select a branch below to see the necessary skills and resources.",
+        link: "", 
+        linkText: "",
+        examples: [
+          {
+            name: "1. Web Development (Front-End)",
+            code: `Focus: User Interfaces and User Experience (UI/UX).\n\nEssential Languages:\n1. HTML & CSS\n2. JavaScript (React/Vue/Angular)\n\nInterest Hook: You enjoy visual design and immediate feedback.`,
+            output: "Study Link: FreeCodeCamp Web Dev Guide",
+            noteLink: "https://www.freecodecamp.org/news/web-development-roadmap/"
+          },
+          {
+            name: "2. Backend & API Development",
+            code: `Focus: Server logic, databases, security, and performance.\n\nEssential Languages:\n1. Python (Django/Flask)\n2. Java (Spring)\n3. SQL (Database interaction)\n\nInterest Hook: You like complex system architecture and data management.`,
+            output: "Study Link: Django Documentation",
+            noteLink: "https://docs.djangoproject.com/en/5.0/intro/"
+          },
+          {
+            name: "3. Data Science & Machine Learning",
+            code: `Focus: Analyzing large datasets, building predictive models.\n\nEssential Languages:\n1. Python (Pandas/NumPy)\n2. SQL (Data Querying)\n\nInterest Hook: You are curious about statistics, patterns, and artificial intelligence.`,
+            output: "Study Link: Python Data Science Handbook",
+            noteLink: "https://jakevdp.github.io/PythonDataScienceHandbook/"
+          },
+          {
+            name: "4. Mobile App Development",
+            code: `Focus: Creating native or cross-platform applications for iOS/Android.\n\nEssential Languages:\n1. Java/Kotlin (Android)\n2. Swift (iOS) or JavaScript (React Native)\n\nInterest Hook: You want your work to be used daily by millions on their phones.`,
+            output: "Study Link: Android Developers Guide",
+            noteLink: "https://developer.android.com/guide"
+          },
+          {
+            name: "5. Embedded Systems & IoT",
+            code: `Focus: Programming microcontrollers, hardware control, and high-performance computing.\n\nEssential Languages:\n1. C\n2. C++\n\nInterest Hook: You are interested in how software controls physical devices (cars, appliances, robotics).`,
+            output: "Study Link: C Programming for Embedded Systems",
+            noteLink: "https://www.circuitbasics.com/c-programming-for-embedded-systems/"
+          },
+          {
+            name: "6. Game Development",
+            code: `Focus: Graphics, physics, and game logic creation.\n\nEssential Languages:\n1. C++ (Performance-critical engines like Unreal)\n2. C# (Unity Engine)\n3. Python (Tooling/Scripting)\n\nInterest Hook: You want to build interactive worlds and captivating digital experiences.`,
+            output: "Study Link: Unity Beginner Tutorials",
+            noteLink: "https://learn.unity.com/"
+          }
+        ]
+      }
+    };
+
+    // DOM references
+    const sidebarLinks = document.querySelectorAll('.sidebar a');
+    const topicTitle = document.querySelector('.topic-title');
+    const description = document.querySelector('.description');
+    const exampleSelector = document.getElementById('example-selector');
+    const exampleCode = document.getElementById('example-code');
+    const codeEditor = document.getElementById('code-editor');
+    const runBtn = document.getElementById('run-btn');
+    const outputDiv = document.getElementById('output');
+    const teacherNotesPlaceholder = document.getElementById('teacher-notes-placeholder');
+    const exampleSearchInput = document.getElementById('example-search');
+
+    let currentTopic = 'javascript';
+    let currentExampleIndex = 0;
+
+    // Load topic data into UI
+    function loadTopic(topic) {
+      if (!topics[topic]) return;
+
+      currentTopic = topic;
+      currentExampleIndex = 0;
+      const topicData = topics[topic];
+
+      topicTitle.textContent = topicData.title;
+      description.textContent = topicData.description;
+
+      // Reset example search input
+      exampleSearchInput.value = '';
+
+      // Fill example selector
+      exampleSelector.innerHTML = '';
+      topicData.examples.forEach((ex, idx) => {
+        const option = document.createElement('option');
+        option.value = idx;
+        option.textContent = ex.name;
+        exampleSelector.appendChild(option);
+      });
+
+      // Show first example
+      loadExample(0);
+
+      // Highlight sidebar
+      sidebarLinks.forEach(link => {
+        link.classList.toggle('active', link.dataset.topic === topic);
+      });
+
+      // Clear output
+      outputDiv.textContent = "(Output will appear here)";
+      outputDiv.classList.remove('error-output');
+      
+      // --- CAREER PATHS SPECIFIC HIDE/SHOW LOGIC ---
+      if (topic === 'career') {
+          // Hide unnecessary elements for the main Career selection screen
+          codeEditor.readOnly = true;
+          codeEditor.style.display = 'block'; // Keep it visible for info display
+          runBtn.style.display = 'none';
+          document.querySelector('h3[for="example-selector"]').textContent = "Select Branch:";
+          document.querySelector('h3:nth-child(5)').textContent = "Information:"; // "Try it Yourself (Editable)"
+          document.querySelector('h3:nth-child(3)').textContent = "Career Path Overview:"; // "Search Examples"
+          exampleSearchInput.placeholder = "Filter career paths...";
+          
+      } else {
+          // Show elements for programming topics
+          codeEditor.readOnly = false;
+          codeEditor.style.display = 'block';
+          runBtn.style.display = 'block';
+          document.querySelector('h3[for="example-selector"]').textContent = "Select Example:";
+          document.querySelector('h3:nth-child(5)').textContent = "Try it Yourself (Editable):"; 
+          document.querySelector('h3:nth-child(3)').textContent = "Search Examples:";
+          exampleSearchInput.placeholder = "Filter practice exercises...";
+
+          // Update General Teacher Notes/Link Section
+          teacherNotesPlaceholder.innerHTML = `
+            <div class="teacher-notes-section">
+                <h3>Further Learning:</h3>
+                <a href="${topicData.link}" target="_blank" rel="noopener noreferrer">${topicData.linkText} 🔗</a>
+            </div>
+          `;
+      }
+      filterExamples(); // Ensure filter runs to set initial display
+    }
+
+    // Load example code (including special logic for career paths)
+    function loadExample(index) {
+      const selectedOption = exampleSelector.querySelector(`option[value="${index}"]`);
+      if (!selectedOption) return;
+
+      const exampleName = selectedOption.textContent;
+      currentExampleIndex = topics[currentTopic].examples.findIndex(ex => ex.name === exampleName);
+
+      const example = topics[currentTopic].examples[currentExampleIndex];
+      exampleCode.textContent = example.code;
+      codeEditor.value = example.code;
+      outputDiv.textContent = "(Output will appear here)";
+      outputDiv.classList.remove('error-output');
+      
+      exampleSelector.value = index; 
+
+      // --- CAREER PATHS SPECIFIC NOTE DISPLAY ---
+      if (currentTopic === 'career') {
+          // Display the interest hook and specific study link for the selected branch
+          teacherNotesPlaceholder.innerHTML = `
+            <div class="teacher-notes-section">
+                <h3>Start Your Learning Journey:</h3>
+                <p>Motivate yourself: ${example.code.split('\n').pop()}</p>
+                <a href="${example.noteLink}" target="_blank" rel="noopener noreferrer">${example.output} 🔗</a>
+            </div>
+          `;
+          codeEditor.value = example.code.replace(example.code.split('\n').pop(), ''); // Show essential languages
+          codeEditor.readOnly = true; 
+          runBtn.style.display = 'none';
+          outputDiv.textContent = example.output; 
+      } else {
+          // Restore normal state for programming topics
+          codeEditor.readOnly = false;
+          runBtn.style.display = 'block';
+          
+          // Restore generic learning link
+          const topicData = topics[currentTopic];
+          teacherNotesPlaceholder.innerHTML = `
+            <div class="teacher-notes-section">
+                <h3>Further Learning:</h3>
+                <a href="${topicData.link}" target="_blank" rel="noopener noreferrer">${topicData.linkText} 🔗</a>
+            </div>
+          `;
+      }
+    }
+
+    // Run the user code (Handles JS execution and static output display)
+    function runCode() {
+      outputDiv.textContent = '';
+      outputDiv.classList.remove('error-output'); 
+
+      if (currentTopic !== 'javascript') {
+        const selectedOptionText = exampleSelector.options[exampleSelector.selectedIndex].text;
+        const currentExample = topics[currentTopic].examples.find(ex => ex.name === selectedOptionText);
+        
+        const staticOutput = currentExample ? currentExample.output : null;
+        
+        if (staticOutput && staticOutput.startsWith("Error:")) {
+            outputDiv.textContent = staticOutput;
+            outputDiv.classList.add('error-output');
+        } else {
+            outputDiv.textContent = staticOutput || "(Output not available for this language to run in-browser. See the expected output above.)";
+        }
+        return;
+      }
+
+      // --- JavaScript Execution and Error Handling ---
+      try {
+        let output = [];
+        const originalConsoleLog = console.log;
+        
+        console.log = (...args) => {
+          output.push(args.map(String).join(' '));
+        };
+
+        new Function(codeEditor.value)();
+
+        console.log = originalConsoleLog;
+
+        outputDiv.textContent = output.length ? output.join('\n') : "(No output)";
+      } catch (e) {
+        outputDiv.textContent = "Error: " + e.name + ": " + e.message;
+        outputDiv.classList.add('error-output');
+      }
+    }
+
+    // Local Search Logic for Examples/Branches
+    function filterExamples() {
+        const searchTerm = exampleSearchInput.value.toLowerCase();
+        let firstVisibleValue = -1;
+
+        Array.from(exampleSelector.options).forEach(option => {
+            const exampleText = option.textContent.toLowerCase();
+            
+            if (exampleText.includes(searchTerm)) {
+                option.style.display = 'block';
+                if (firstVisibleValue === -1) {
+                    firstVisibleValue = option.value;
+                }
+            } else {
+                option.style.display = 'none';
+            }
+        });
+
+        // Load the first visible example if a search term is present or on initial load
+        if (firstVisibleValue !== -1 && exampleSelector.value !== firstVisibleValue) {
+            exampleSelector.value = firstVisibleValue;
+            loadExample(parseInt(firstVisibleValue));
+        } else if (firstVisibleValue === -1) {
+             // Handle case where no examples match
+            exampleCode.textContent = "No matching examples/paths found.";
+            codeEditor.value = "";
+            outputDiv.textContent = "(No matching results)";
+            outputDiv.classList.remove('error-output');
+        }
+    }
+
+    // Event listeners
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        loadTopic(link.dataset.topic);
+      });
+    });
+
+    exampleSelector.addEventListener('change', e => {
+      loadExample(parseInt(e.target.value));
+    });
+
+    runBtn.addEventListener('click', runCode);
+
+    exampleSearchInput.addEventListener('keyup', filterExamples);
+
+    // Initial load
+    window.onload = () => {
+      loadTopic(currentTopic);
+    };
+  </script>
+
+</body>
+</html>
